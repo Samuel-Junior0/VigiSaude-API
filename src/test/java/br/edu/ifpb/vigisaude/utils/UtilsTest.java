@@ -1,6 +1,9 @@
 package br.edu.ifpb.vigisaude.utils;
 
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class UtilsTest {
@@ -18,8 +21,23 @@ class UtilsTest {
 
     @Test
     void testCsvSanitizerDecodeHtmlEntities() {
-        assertEquals("SOLUÇÃO", CsvSanitizer.decodeHtmlEntities("SOLU&#231;&#227;O"));
+        assertEquals("SOLUçãO", CsvSanitizer.decodeHtmlEntities("SOLU&#231;&#227;O"));
+        assertEquals("SOLUÇÃO", CsvSanitizer.decodeHtmlEntities("SOLU&#199;&#195;O"));
         assertEquals("ç", CsvSanitizer.decodeHtmlEntities("&ccedil;"));
+        assertEquals("º", CsvSanitizer.decodeHtmlEntities("&ordm;"));
+        assertEquals("\u00A0", CsvSanitizer.decodeHtmlEntities("&nbsp;"));
+        assertEquals("😀", CsvSanitizer.decodeHtmlEntities("&#x1F600;"));
+        assertNull(CsvSanitizer.decodeHtmlEntities(null));
+    }
+
+    @Test
+    void testSplitPipeValues() {
+        assertEquals(
+                List.of("Amoxicilina sódica", "Clavulanato de potássio"),
+                CsvSanitizer.splitPipeValues("Amoxicilina sódica|Clavulanato de potássio")
+        );
+        assertEquals(List.of("A"), CsvSanitizer.splitPipeValues(" A | | A "));
+        assertTrue(CsvSanitizer.splitPipeValues(null).isEmpty());
     }
 
     @Test

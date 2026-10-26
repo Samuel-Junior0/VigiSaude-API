@@ -19,11 +19,8 @@ public class MedicamentoNotificado {
     @JoinColumn(name = "notificacao_id")
     private Notificacao notificacao;
 
-    @Column(name = "nome_medicamento")
+    @Column(name = "nome_medicamento", columnDefinition = "TEXT")
     private String nomeMedicamento;
-
-    @Column(name = "principio_ativo")
-    private String principioAtivo;
 
     @Column(name = "relacao_evento")
     private String relacaoEvento;

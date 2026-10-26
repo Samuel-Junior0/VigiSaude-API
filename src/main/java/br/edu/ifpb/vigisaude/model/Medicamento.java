@@ -18,7 +18,7 @@ public class Medicamento {
     @Column(name = "nome_produto")
     private String nomeProduto;
 
-    @Column(name = "principio_ativo")
+    @Column(name = "principio_ativo", columnDefinition = "TEXT")
     private String principioAtivo;
 
     @Column(name = "cnpj_detentor")

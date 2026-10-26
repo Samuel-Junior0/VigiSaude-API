@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Service
@@ -15,7 +16,7 @@ public class ConsultaService {
 
     private final NormalizacaoService normalizacaoService;
     private final ReacaoNotificadaRepository reacaoNotificadaRepository;
-    private final MedicamentoNotificadoRepository medicamentoNotificadoRepository;
+    private final PrincipioAtivoRepository principioAtivoRepository;
     private final EstabelecimentoRepository estabelecimentoRepository;
 
     public RespostaFarmacovigilanciaDTO processarConsulta(ConsultaRequestDTO request) {
@@ -24,7 +25,8 @@ public class ConsultaService {
         String uf = request.getUf();
 
         String termoPadronizado = normalizacaoService.padronizarSintoma(sintomaBruto);
-        boolean sinonimoEncontrado = !termoPadronizado.equalsIgnoreCase(sintomaBruto != null ? sintomaBruto.trim() : "");
+        boolean sinonimoEncontrado = termoPadronizado != null
+                && !termoPadronizado.equalsIgnoreCase(sintomaBruto != null ? sintomaBruto.trim() : "");
 
         ConsultaInfoDTO consultaInfo = ConsultaInfoDTO.builder()
                 .termoDigitado(sintomaBruto)
@@ -36,13 +38,16 @@ public class ConsultaService {
 
         long totalNotificacoes = reacaoNotificadaRepository.countNotificacoesByTermoPtAndUf(termoPadronizado, uf);
         
-        List<Object[]> topMedicamentos = medicamentoNotificadoRepository.findTopPrincipioAtivoByTermoPt(termoPadronizado);
+        List<Object[]> topMedicamentos = principioAtivoRepository.findTopPrincipioAtivoByTermoPtAndUf(termoPadronizado, uf);
         MedicamentoMaisNotificadoDTO medMaisNotificado = null;
 
         if (!topMedicamentos.isEmpty() && topMedicamentos.get(0) != null) {
             Object[] top = topMedicamentos.get(0);
             String principioAtivo = (String) top[0];
-            String percentual = top.length > 1 && top[1] != null ? top[1].toString() + "%" : "0%";
+            long totalPrincipio = top.length > 1 && top[1] != null ? ((Number) top[1]).longValue() : 0L;
+            String percentual = totalNotificacoes > 0
+                    ? String.format(Locale.ROOT, "%.1f%%", (totalPrincipio * 100.0) / totalNotificacoes)
+                    : "0%";
             medMaisNotificado = MedicamentoMaisNotificadoDTO.builder()
                     .principioAtivo(principioAtivo)
                     .percentualDosCasos(percentual)
@@ -63,6 +68,7 @@ public class ConsultaService {
                         .tipoLogradouro(e.getEndereco().getTipoLogradouro())
                         .logradouro(e.getEndereco().getNomeLogradouro())
                         .numero(e.getEndereco().getNumero())
+                        .semNumero(e.getEndereco().getSemNumero())
                         .bairro(e.getEndereco().getBairro())
                         .cep(e.getEndereco().getCep())
                         .build();

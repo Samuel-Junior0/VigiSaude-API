@@ -1,12 +1,11 @@
 package br.edu.ifpb.vigisaude.utils;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.apache.commons.text.StringEscapeUtils;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class CsvSanitizer {
-
-    private static final Pattern HTML_ENTITY_NUM_PATTERN = Pattern.compile("&#(\\d+);");
-    private static final Pattern HTML_ENTITY_HEX_PATTERN = Pattern.compile("&#x([0-9a-fA-F]+);");
 
     public static String toNullIfInvalid(String valor) {
         if (valor == null) {
@@ -26,59 +25,26 @@ public class CsvSanitizer {
         return trimmed;
     }
 
+    /**
+     * Decodifica entidades HTML4 nomeadas e numéricas (decimais e hexadecimais),
+     * incluindo code points fora do BMP (ex.: &#x1F600;).
+     */
     public static String decodeHtmlEntities(String texto) {
         if (texto == null) {
             return null;
         }
+        return StringEscapeUtils.unescapeHtml4(texto);
+    }
 
-        String decoded = texto
-                .replace("&ccedil;", "ç")
-                .replace("&Ccedil;", "Ç")
-                .replace("&atilde;", "ã")
-                .replace("&Atilde;", "Ã")
-                .replace("&aacute;", "á")
-                .replace("&Aacute;", "Á")
-                .replace("&eacute;", "é")
-                .replace("&Eacute;", "É")
-                .replace("&iacute;", "í")
-                .replace("&Iacute;", "Í")
-                .replace("&oacute;", "ó")
-                .replace("&Oacute;", "Ó")
-                .replace("&uacute;", "ú")
-                .replace("&Uacute;", "Ú")
-                .replace("&amp;", "&")
-                .replace("&quot;", "\"")
-                .replace("&apos;", "'")
-                .replace("&lt;", "<")
-                .replace("&gt;", ">");
-
-        Matcher matcherNum = HTML_ENTITY_NUM_PATTERN.matcher(decoded);
-        StringBuffer sbNum = new StringBuffer();
-        while (matcherNum.find()) {
-            try {
-                int codePoint = Integer.parseInt(matcherNum.group(1));
-                matcherNum.appendReplacement(sbNum, Matcher.quoteReplacement(String.valueOf((char) codePoint)));
-            } catch (NumberFormatException e) {
-                // Keep original
-            }
+    public static List<String> splitPipeValues(String valor) {
+        if (valor == null) {
+            return List.of();
         }
-        matcherNum.appendTail(sbNum);
-        decoded = sbNum.toString();
-
-        Matcher matcherHex = HTML_ENTITY_HEX_PATTERN.matcher(decoded);
-        StringBuffer sbHex = new StringBuffer();
-        while (matcherHex.find()) {
-            try {
-                int codePoint = Integer.parseInt(matcherHex.group(1), 16);
-                matcherHex.appendReplacement(sbHex, Matcher.quoteReplacement(String.valueOf((char) codePoint)));
-            } catch (NumberFormatException e) {
-                // Keep original
-            }
-        }
-        matcherHex.appendTail(sbHex);
-        decoded = sbHex.toString();
-
-        return decoded;
+        return Arrays.stream(valor.split("\\|"))
+                .map(String::trim)
+                .filter(item -> !item.isEmpty())
+                .distinct()
+                .toList();
     }
 
     public static String cleanZipCode(String cep) {

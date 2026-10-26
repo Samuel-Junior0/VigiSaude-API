@@ -18,6 +18,10 @@ public class EnderecoDTO {
     private String logradouro;
 
     private String numero;
+
+    @JsonProperty("sem_numero")
+    private Boolean semNumero;
+
     private String bairro;
     private String cep;
 }

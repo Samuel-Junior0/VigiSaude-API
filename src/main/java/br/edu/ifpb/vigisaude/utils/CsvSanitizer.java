@@ -25,10 +25,6 @@ public class CsvSanitizer {
         return trimmed;
     }
 
-    /**
-     * Decodifica entidades HTML4 nomeadas e numéricas (decimais e hexadecimais),
-     * incluindo code points fora do BMP (ex.: &#x1F600;).
-     */
     public static String decodeHtmlEntities(String texto) {
         if (texto == null) {
             return null;

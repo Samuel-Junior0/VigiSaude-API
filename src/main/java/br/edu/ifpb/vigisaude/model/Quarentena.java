@@ -5,12 +5,6 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-/**
- * Registro de auditoria dos dados descartados durante o ETL.
- *
- * Guarda tanto órfãos (registros cuja notificação não existe) quanto linhas
- * malformadas ou sem identificador, preservando a linha bruta para análise.
- */
 @Entity
 @Table(name = "tb_quarentena", indexes = {
         @Index(name = "idx_quarentena_origem", columnList = "origem"),

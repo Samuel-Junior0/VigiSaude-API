@@ -4,14 +4,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.Reader;
 
-/**
- * Lê linhas de arquivos CSV usando apenas o caractere '\n' como terminador.
- *
- * Diferentemente de {@link java.io.BufferedReader#readLine()}, esta classe não
- * trata '\r' como quebra de linha. Assim, eventuais '\r' internos (presentes,
- * por exemplo, no campo NOTIFICADOR da base VigiMed) são preservados, e apenas
- * o '\r' que antecede um '\n' (fim de linha CRLF) é removido.
- */
 public final class CsvLineReader implements Closeable {
 
     private final Reader reader;
@@ -23,9 +15,6 @@ public final class CsvLineReader implements Closeable {
         this.reader = reader;
     }
 
-    /**
-     * @return a próxima linha, sem o '\n' e sem o '\r' de um CRLF; ou null no fim do arquivo.
-     */
     public String readLine() throws IOException {
         StringBuilder acumulado = null;
 
@@ -49,12 +38,12 @@ public final class CsvLineReader implements Closeable {
                     if (fim > inicio && buffer[fim - 1] == '\r') {
                         fim--;
                     }
-                    pos++; // consome o '\n'
+                    pos++;
                     return new String(buffer, inicio, fim - inicio);
                 }
 
                 acumulado.append(buffer, inicio, pos - inicio);
-                pos++; // consome o '\n'
+                pos++;
                 removerCrFinal(acumulado);
                 return acumulado.toString();
             }

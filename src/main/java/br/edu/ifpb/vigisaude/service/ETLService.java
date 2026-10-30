@@ -45,10 +45,6 @@ public class ETLService {
     private final MedicamentoRepository medicamentoRepository;
     private final QuarentenaRepository quarentenaRepository;
 
-    /**
-     * A VigiMed usa Windows-1252. A leitura como ISO-8859-1 mantinha os bytes
-     * 0x93/0x94/0x96 como caracteres de controle, em vez de aspas e travessão.
-     */
     private static final Charset VIGIMED_CHARSET = Charset.forName("windows-1252");
 
     private static final Map<String, String> IBGE_UF_MAP = Map.ofEntries(
@@ -88,7 +84,6 @@ public class ETLService {
                 if (codigoIbge.isEmpty() || nome.isEmpty()) continue;
 
                 mapa.put(codigoIbge, nome);
-                // O CNES grava o código IBGE com 6 dígitos; o arquivo de municípios usa 7.
                 if (codigoIbge.length() > 6) {
                     mapa.putIfAbsent(codigoIbge.substring(0, 6), nome);
                 }
@@ -210,8 +205,6 @@ public class ETLService {
             return;
         }
 
-        // O CNES usa campos entre aspas e delimitador ';'. O split simples mantinha
-        // as aspas nos valores e impedia a resolução de município/UF e de "S/N".
         CSVFormat formato = CSVFormat.DEFAULT.builder()
                 .setDelimiter(';')
                 .setQuote('"')
@@ -302,8 +295,6 @@ public class ETLService {
                 }
 
                 String linhaBruta = line;
-                // O campo NOTIFICADOR (não persistido) contém '\r' internos.
-                // Trocamos por '|' para preservar o conteúdo sem quebrar a linha.
                 line = line.replace('\r', '|');
 
                 String[] cols = line.split(";", -1);
